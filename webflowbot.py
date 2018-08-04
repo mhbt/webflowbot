@@ -2,6 +2,8 @@ from selenium import webdriver
 from time import sleep
 from pprint import pprint
 import json
+
+
 class WebFlowBot:
     
     def __init__(self):
@@ -12,8 +14,10 @@ class WebFlowBot:
         self.hire_url = None
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('headless')
-        # self.browser = webdriver.Chrome(chrome_options=self.options)
-        self.browser = webdriver.Chrome()
+        #To run script headless -- no browser output seen
+        self.browser = webdriver.Chrome(chrome_options=self.options)
+        #To run script while monitoring the changes
+        #self.browser = webdriver.Chrome()
         self.data = []
     
     def define_task(self,task):
