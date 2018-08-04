@@ -15,7 +15,7 @@ class WebFlowBot:
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('headless')
         #To run script headless -- no browser output seen
-        self.browser = webdriver.Chrome(chrome_options=self.options)
+        self.browser = webdriver.Chrome(executable_path="./chromedriver",chrome_options=self.options)
         #To run script while monitoring the changes
         #self.browser = webdriver.Chrome()
         self.data = []
@@ -41,6 +41,7 @@ class WebFlowBot:
         self.browser.get(url)
         print("#Bot: Started following...")
         sleep(self.sleep)
+        self.define_task("-f")
         while(True):
             links = self.browser.find_elements_by_class_name('profile-link')
             for i in range(0,len(links)):
@@ -84,6 +85,7 @@ class WebFlowBot:
             print("#Bot: No previous data for hired persons found. Hired data will be recorded to avoid resends.")
         self.browser.get(url)
         sleep(self.sleep)
+        self.bot.define_task("-h")
         while (True):
             links = self.browser.find_elements_by_class_name('profile-link')
             for i in range(0,len(links)):
