@@ -11,6 +11,8 @@ import json
 class WebFlowBot:
     
     def __init__(self, headless=False):
+
+        self.poll_frequency = 10
         self.task = "-t"
         self.delay = 2
         self.long_delay = 10
@@ -55,51 +57,41 @@ class WebFlowBot:
                 WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
                 links = self.browser.find_elements_by_class_name('profile-link')
             except:
-                print("Connection Slow. Waiting....")
-                WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
-                links = self.browser.find_elements_by_class_name('profile-link')
-            for i in range(0,len(links)):
-                try:
+                print("#Bot Error: Timeout while waiting for page load." + self.browser.current_url)
+            else:
+                for i in range(0,len(links)):
                     links[i].click()
+                    WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
                     print("#Bot: Follow " + self.browser.current_url)
-                except:
                     try:
+                        follow = WebDriverWait(self.browser, self.long_delay, poll_frequency=self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a.follower')))
                         sleep(self.delay)
-                        links[i].click()
                     except:
-                        print("Link speed is slow. Couldn't get element. Bot will force close...")
-                try:
-                    follow = WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a.follower')))
+                        print("#Bot Error: Problem While finding the element on the page")
+                    else:
+                        if(follow.text == "Follow"):
+                            follow.click()
+                            print("#Bot: Followed " + self.browser.current_url)
+                        else:
+                            print("#Bot: Already Following " + self.browser.current_url)
                     sleep(self.delay)
-                except:
-                    print("Link speed is slow. Couldn't get the element in required time. Trying again in some time...")
-                    sleep(self.long_delay)
-                    follow = WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a.follower')))
-
-                if(follow.text == "Follow"):
-                    follow.click()
-                    print("#Bot: Followed " + self.browser.current_url)
-                else:
-                    print("#Bot: Already Following " + self.browser.current_url)
-                sleep(self.delay)
-                self.browser.back()
-                try:
-                    self.follow_url = self.browser.current_url
-                    WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
-                    links = self.browser.find_elements_by_class_name('profile-link')
-                except:
-                    print("Waiting to load page... Connection is slow")
-                    WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
-                    links = self.browser.find_elements_by_class_name('profile-link')
-
-            try:
-                nextBtn = self.browser.find_element_by_css_selector("a[ng-show='hasNextPage()']")
-                nextBtn.click()
-                WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'profile-link')))
-                sleep(self.delay)
-            except:
-                sleep(self.delay)
-                WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'profile-link')))
+                    self.browser.back()
+                    sleep(self.delay)
+                    try:
+                        WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
+                        links = self.browser.find_elements_by_class_name('profile-link')
+                    except:
+                        print("#Bot Error: Updating stale links...")
+            nextBtn = WebDriverWait(self.browser, self.long_delay, self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[ng-show='hasNextPage()']")))
+            nextBtn.click()
+            # try:
+            #     #nextBtn = self.browser.find_element_by_css_selector("a[ng-show='hasNextPage()']")
+            #     nextBtn = WebDriverWait(browser, self.long_delay, self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[ng-show='hasNextPage()']")))
+            # except:
+            #     print("#Bot Error: Next Button is not found. Bot may shutdown now!")
+            # else:
+            #     sleep(self.delay)
+            #     nextBtn.click()
         print("#Bot: Task accomplihsed!")
 
     def hire(self, url, subject, body):
