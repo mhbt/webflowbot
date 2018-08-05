@@ -6,19 +6,21 @@ import json
 
 class WebFlowBot:
     
-    def __init__(self):
+    def __init__(self, headless=False):
         self.task = "-t"
-        self.sleep = 2
+        self.sleep = 3
         self.long_wait = 2
         self.follow_url = None
         self.hire_url = None
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('headless')
-        #To run script headless -- no browser output seen
-        self.browser = webdriver.Chrome(executable_path="./chromedriver",chrome_options=self.options)
-        #To run script while monitoring the changes
-        #self.browser = webdriver.Chrome()
         self.data = []
+        if (headless):
+            #To run script headless -- no browser output seen
+            self.browser = webdriver.Chrome(executable_path="./chromedriver",chrome_options=self.options)
+        else:
+            #To run script while monitoring the changes
+            self.browser = webdriver.Chrome(executable_path="./chromedriver")
     
     def define_task(self,task):
         self.task = task
@@ -82,10 +84,10 @@ class WebFlowBot:
                 self.data = json.load(file)
                 print("#Bot: Reading Finished!")
         except EnvironmentError:
-            print("#Bot: No previous data for hired persons found. Hired data will be recorded to avoid resends.")
+            pass
         self.browser.get(url)
         sleep(self.sleep)
-        self.bot.define_task("-h")
+        self.define_task("-h")
         while (True):
             links = self.browser.find_elements_by_class_name('profile-link')
             for i in range(0,len(links)):
