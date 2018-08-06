@@ -132,26 +132,13 @@ class WebFlowBot:
             print("#Bot: Page covered. Next page " + self.browser.current_url +". Moving to next page. Please wait...")
         finally:
             sleep(5)
-            self.hire_url = self.browser.current_url    
-
-    def read_data_json(self):
-        try:
-            print("#Bot: Reading previous data for hirings...")
-            with  open('data.json', 'r') as file:
-                try:
-                    self.data = json.load(file)
-                except:
-                    print("#Bot: No JSON data found in the file.")
-                    self.data = []
-                print("#Bot: Reading Finished!")
-        except EnvironmentError:
-            print("#Bot: No previous record found.")
+            self.follow_url = self.browser.current_url
     
     def hire(self, url, subject, body):
-        self.follow_url = url
-        self.browser.get(self.follow_url)
-        print("#Bot: Started following...")
-        self.define_task("-f")
+        self.hire_url = url
+        self.browser.get(self.hire_url)
+        print("#Bot: Started mandate...")
+        self.define_task("-h")
         while(True):
             try:
                 WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
@@ -217,7 +204,7 @@ class WebFlowBot:
         print("#Bot: Task accomplihsed!")
 
     def save_follow_url(self):
-        print("#Bot: Updating Follow link in 'config.json'")
+        print("#Bot: Updating follow link in 'config.json'")
         temp = None
         try:
             print("#Bot: Reading previous data...")
@@ -244,7 +231,8 @@ class WebFlowBot:
                 json.dump(temp, file)
                 print("#Bot: Successful!")
         except EnvironmentError:
-            print("#Bot: Error Opening 'config.json'")       
+            print("#Bot: Error Opening 'config.json'")      
+             
     def __del__(self):
         if(self.task == "-f"):
             self.save_follow_url()
