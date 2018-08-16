@@ -18,7 +18,6 @@ def main():
         except EnvironmentError:
             print("#Bot Error: Error Opening File 'config.json'. Bot needs this file to run properly.")
             exit(-1)
-
         if(len(sys.argv)> 1):
             task = sys.argv[1]
         else:
@@ -36,6 +35,13 @@ def main():
             print("#Bot Error: Chrome Webdriver failed to load or don't exsit.")
             print("#Bot Error: Download Chrome driver from https://sites.google.com/a/chromium.org/chromedriver/downloads")
             exit(-1)
+        if isinstance(config["omit"], list):
+            for url in config["omit"]:
+                print("#Bot: Adding " + url + " to omit list...")
+            try:
+                bot.omit(config["omit"])
+            except:
+                print("#Bot Error: Omit assignment failed...")
 
         try:
             print("#Bot: Trying to login...")
@@ -45,8 +51,6 @@ def main():
         except:
             print("#Bot Error: Login Failed. Please Check your credentials in 'config.json' file or there is poor connection...")
             exit(-1)
-
-
         if (task == "-f"):
             bot.follow(config["follow_url"])
         elif (task == "-h"):

@@ -21,6 +21,7 @@ class WebFlowBot:
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('headless')
         self.data = []
+        self.omit_list = []
         if (headless):
             #To run script headless -- no browser output seen
             self.browser = webdriver.Chrome(executable_path="./chromedriver",chrome_options=self.options)
@@ -31,6 +32,15 @@ class WebFlowBot:
     
     def define_task(self,task):
         self.task = task
+        
+    def omit(self, omit_list):
+        self.omit_list = omit_list
+
+    def check_omit(self, url_match):
+        for url in self.omit_list:
+            if url == url_match:
+                return True
+        return False
     
     def init_webflow(self, username, password):
         self.browser.get("https://webflow.com/dashboard/login?r=%2Fdashboard")
@@ -76,27 +86,33 @@ class WebFlowBot:
                             sleep(self.delay)
                     WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
                     print("#Bot: Follow " + self.browser.current_url)
-                    try:
-                        sleep(self.delay)
-                        follow = WebDriverWait(self.browser, self.long_delay, poll_frequency=self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a.follower')))
-                    except:
-                        print("#Bot Error: Problem While finding the element on the page")
-                        sleep(self.delay)
-                    else:
-                        try:
-                            WebDriverWait(self.browser,self.long_delay, poll_frequency = self.poll_frequency).until(EC.visibility_of_element_located((By.CSS_SELECTOR,'a.follower')))
-                        except:
-                            print("#Bot Error: Failed to follow " + self.browser.current_url )
-                        else:
-                            if(follow.text == "Follow"):
-                                follow.click()
-                                print("#Bot: Followed " + self.browser.current_url)
-                            elif(follow.text == "Following"):
-                                print("#Bot: Already Following " + self.browser.current_url)
-                    finally:
+                    if(self.check_omit(self.browser.current_url)):
+                        print ("#Bot: Follow Omitted By 'Config.json'")
                         sleep(self.delay)
                         self.browser.back()
                         sleep(self.delay)
+                    else:
+                        try:
+                            sleep(self.delay)
+                            follow = WebDriverWait(self.browser, self.long_delay, poll_frequency=self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a.follower')))
+                        except:
+                            print("#Bot Error: Problem While finding the element on the page")
+                            sleep(self.delay)
+                        else:
+                            try:
+                                WebDriverWait(self.browser,self.long_delay, poll_frequency = self.poll_frequency).until(EC.visibility_of_element_located((By.CSS_SELECTOR,'a.follower')))
+                            except:
+                                print("#Bot Error: Failed to follow " + self.browser.current_url )
+                            else:
+                                if(follow.text == "Follow"):
+                                    follow.click()
+                                    print("#Bot: Followed " + self.browser.current_url)
+                                elif(follow.text == "Following"):
+                                    print("#Bot: Already Following " + self.browser.current_url)
+                        finally:
+                            sleep(self.delay)
+                            self.browser.back()
+                            sleep(self.delay)
                     try:
                         WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
                     except:
@@ -161,36 +177,43 @@ class WebFlowBot:
                             continue
                         finally:
                             sleep(self.delay)
+
                     WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
                     print("#Bot: Sending hire message to " + self.browser.current_url)
-                    try:
-                        sleep(self.delay)
-                        hire = WebDriverWait(self.browser, self.long_delay, poll_frequency=self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[ng-click="hire()"]')))
-                    except:
-                        print("#Bot Error: Problem While finding the element on the page")
-                        sleep(self.delay)
-                    else:
-                        try:
-                            WebDriverWait(self.browser,self.long_delay, poll_frequency = self.poll_frequency).until(EC.visibility_of_element_located((By.CSS_SELECTOR,'a[ng-click="hire()"]')))
-                        except:
-                            print("#Bot Error: Failed to send message " + self.browser.current_url )
-                        else:
-                            hire.click()
-                            sleep(self.delay)
-                            subjectInput = WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.NAME, "subject")))
-                            messageInput = WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.NAME, "body")))
-                            submitBtn = self.browser.find_element_by_css_selector("button.button.pull-right[ng-click='message(subject, body)']")
-                            cancelBtn = self.browser.find_element_by_css_selector("button[ng-click='cancel()']")
-                            subjectInput.send_keys(subject)
-                            messageInput.send_keys(body)
-                            submitBtn.click()
-                            cancelBtn.click()
-                            print("#Bot: Message sent...")
-
-                    finally:
+                    if self.check_omit(self.browser.current_url):
+                        print("#Bot: Hire Message omitted by 'config.json'")
                         sleep(self.delay)
                         self.browser.back()
                         sleep(self.delay)
+                    else:
+                        try:
+                            sleep(self.delay)
+                            hire = WebDriverWait(self.browser, self.long_delay, poll_frequency=self.poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[ng-click="hire()"]')))
+                        except:
+                            print("#Bot Error: Problem While finding the element on the page")
+                            sleep(self.delay)
+                        else:
+                            try:
+                                WebDriverWait(self.browser,self.long_delay, poll_frequency = self.poll_frequency).until(EC.visibility_of_element_located((By.CSS_SELECTOR,'a[ng-click="hire()"]')))
+                            except:
+                                print("#Bot Error: Failed to send message " + self.browser.current_url )
+                            else:
+                                hire.click()
+                                sleep(self.delay)
+                                subjectInput = WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.NAME, "subject")))
+                                messageInput = WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.NAME, "body")))
+                                submitBtn = self.browser.find_element_by_css_selector("button.button.pull-right[ng-click='message(subject, body)']")
+                                cancelBtn = self.browser.find_element_by_css_selector("button[ng-click='cancel()']")
+                                subjectInput.send_keys(subject)
+                                messageInput.send_keys(body)
+                                submitBtn.click()
+                                cancelBtn.click()
+                                print("#Bot: Message sent...")
+
+                        finally:
+                            sleep(self.delay)
+                            self.browser.back()
+                            sleep(self.delay)
                     try:
                         WebDriverWait(self.browser, self.long_delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile-link')))
                     except:
